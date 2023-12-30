@@ -12,10 +12,41 @@
             overflow: hidden;
             background: #000; /* ? */
         }
+
+        #fps {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: #fff;
+            font-family: monospace;
+            font-size: 0.8rem;
+            padding: 0.5rem;
+        }
     </style>
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+
+    <span id="fps"></span>
+
+    <!--<script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
+    <script>
+        const app = new PIXI.Application({ antialias: true, resizeTo: window });
+        window.app = app;
+
+        const graphics = new PIXI.Graphics();
+        window.renderClear = () => graphics.clear();
+        window.renderCircle = (x, y, r, color, alpha) => {
+            graphics.lineStyle(0);
+            graphics.beginFill(color, alpha);
+            graphics.drawCircle(x, y, r);
+            graphics.endFill();
+        };
+
+        app.stage.addChild(graphics);
+        console.log("[PIXI]", graphics);
+    </script>-->
+
     <script src="./bootstrap.js"></script>
   </body>
 </html>
