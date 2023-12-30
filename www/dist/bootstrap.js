@@ -58,11 +58,11 @@
 /******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
 /******/ 					},
-/******/ 					"__wbindgen_number_get": function(p0i32,p1i32) {
-/******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbindgen_number_get"](p0i32,p1i32);
-/******/ 					},
 /******/ 					"__wbindgen_string_new": function(p0i32,p1i32) {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbindgen_string_new"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_number_get": function(p0i32,p1i32) {
+/******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbindgen_number_get"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbg_new_abda76e883ba8a5f": function() {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_new_abda76e883ba8a5f"]();
@@ -94,17 +94,23 @@
 /******/ 					"__wbg_createElement_fdd5c113cb84539e": function(p0i32,p1i32,p2i32) {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_createElement_fdd5c113cb84539e"](p0i32,p1i32,p2i32);
 /******/ 					},
+/******/ 					"__wbg_getElementById_65b9547a428b5eb4": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_getElementById_65b9547a428b5eb4"](p0i32,p1i32,p2i32);
+/******/ 					},
 /******/ 					"__wbg_setAttribute_e7b72a5e7cfcb5a3": function(p0i32,p1i32,p2i32,p3i32,p4i32) {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_setAttribute_e7b72a5e7cfcb5a3"](p0i32,p1i32,p2i32,p3i32,p4i32);
 /******/ 					},
 /******/ 					"__wbg_log_a4530b4fe289336f": function(p0i32) {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_log_a4530b4fe289336f"](p0i32);
 /******/ 					},
+/******/ 					"__wbg_instanceof_HtmlElement_55a0f0f0f0f0118e": function(p0i32) {
+/******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_instanceof_HtmlElement_55a0f0f0f0f0118e"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_setinnerText_47d4c1467f41881d": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_setinnerText_47d4c1467f41881d"](p0i32,p1i32,p2i32);
+/******/ 					},
 /******/ 					"__wbg_instanceof_CanvasRenderingContext2d_b43c8f92c4744b7b": function(p0i32) {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_instanceof_CanvasRenderingContext2d_b43c8f92c4744b7b"](p0i32);
-/******/ 					},
-/******/ 					"__wbg_globalAlpha_a6f87b2579d6a3c7": function(p0i32) {
-/******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_globalAlpha_a6f87b2579d6a3c7"](p0i32);
 /******/ 					},
 /******/ 					"__wbg_setglobalAlpha_e0ca444d935ec28d": function(p0i32,p1f64) {
 /******/ 						return installedModules["./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.js"].exports["__wbg_setglobalAlpha_e0ca444d935ec28d"](p0i32,p1f64);
@@ -270,7 +276,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.wasm":"3ddaf31f8b1f255b4642"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"./node_modules/.pnpm/file+..+pkg/node_modules/fireworks23/fireworks23_bg.wasm":"5a032635fb6959308de2"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
