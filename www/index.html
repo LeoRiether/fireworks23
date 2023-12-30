@@ -12,10 +12,23 @@
             overflow: hidden;
             background: #000; /* ? */
         }
+
+        #fps {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: #fff;
+            font-family: monospace;
+            font-size: 0.8rem;
+            padding: 0.5rem;
+        }
     </style>
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+
+    <span id="fps"></span>
+
     <script src="./bootstrap.js"></script>
   </body>
 </html>

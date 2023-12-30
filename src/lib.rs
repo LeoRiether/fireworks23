@@ -14,6 +14,8 @@ pub struct Fireworks {
     height: f32,
     ctx: web_sys::CanvasRenderingContext2d,
     last_time: f64,
+    fps_el: web_sys::HtmlElement,
+    fps_avg: f32,
 
     particles: Vec<Particle>,
     new_particles: Vec<Particle>,
@@ -45,6 +47,15 @@ impl Fireworks {
 
         let last_time = window.performance().unwrap().now();
 
+        let fps_el = window
+            .document()
+            .unwrap()
+            .get_element_by_id("fps")
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap();
+        let fps_avg = 60.0;
+
         let particles = Vec::with_capacity(MAX_PARTICLES);
         let new_particles = Vec::new();
 
@@ -53,6 +64,8 @@ impl Fireworks {
             height,
             ctx,
             last_time,
+            fps_el,
+            fps_avg,
             particles,
             new_particles,
         })
@@ -87,7 +100,7 @@ impl Fireworks {
 
     pub fn update(&mut self, dt: f32) {
         if self.particles.len() >= (MAX_PARTICLES as f64 * 0.9) as usize {
-            let message = format!("particles almost as max size: {}", self.particles.len());
+            let message = format!("particles almost at max size: {}", self.particles.len());
             web_sys::console::log_1(&message.into());
         }
 
@@ -124,6 +137,10 @@ impl Fireworks {
             self.particles
                 .push(Particle::random(self.width, self.height));
         }
+
+        // Update fps counter
+        self.fps_avg = self.fps_avg * 0.9 + 0.1 * (1.0 / dt);
+        self.fps_el.set_inner_text(&format!("{:.2}", self.fps_avg));
     }
 
     pub fn render(&self) {
