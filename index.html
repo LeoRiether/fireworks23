@@ -13,7 +13,7 @@
             background: #000; /* ? */
         }
 
-        #fps {
+        #perf {
             position: absolute;
             top: 0;
             left: 0;
@@ -22,12 +22,20 @@
             font-size: 0.8rem;
             padding: 0.5rem;
         }
+
+        #perf > p {
+            margin: 0;
+        }
     </style>
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
 
-    <span id="fps"></span>
+    <div id="perf">
+        <p id="fps"></p>
+        <p id="update-time"></p>
+        <p id="render-time"></p>
+    </div>
 
     <!--<script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
     <script>
