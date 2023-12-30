@@ -60,11 +60,6 @@ impl Particle {
         }
     }
 
-    pub fn with_behavior(mut self, behavior: Behavior) -> Self {
-        self.behaviors.push(behavior);
-        self
-    }
-
     #[inline]
     pub fn update(&mut self, dt: f32, width: f32, height: f32) -> Vec<Operation> {
         let mut result = Vec::new();
@@ -165,16 +160,17 @@ impl Behavior {
                 result.push(Operation::Push(trail));
             }
             LeavesSparklingTrail => {
-                let mut trail = p
-                    .clone()
-                    .with_behavior(Behavior::Fades {
+                let mut trail = p.clone();
+                trail.behaviors = vec![
+                    Behavior::Fades {
                         alpha: 1.0,
                         factor: 0.95,
-                    })
-                    .with_behavior(Behavior::Sparkles {
+                    },
+                    Behavior::Sparkles {
                         time: rand32(0.0, 0.8),
                         cycle_duration: rand32(0.1, 0.8),
-                    });
+                    },
+                ];
                 trail.vx *= 0.1;
                 trail.vy *= 0.1;
                 result.push(Operation::Push(trail));
@@ -234,8 +230,8 @@ fn random_explosion_behaviors() -> Vec<Behavior> {
 fn modify_child_behaviors(behaviors: &mut Vec<Behavior>) {
     for b in behaviors {
         match b {
-            Behavior::Fades { alpha, factor: _ } => {
-                *alpha *= rand32(0.94, 0.97);
+            Behavior::Fades { alpha: _, factor } => {
+                *factor *= rand32(0.94, 1.01);
             }
             Behavior::Sparkles {
                 time,

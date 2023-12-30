@@ -15,3 +15,26 @@ pub fn rand32(min: f32, max: f32) -> f32 {
     Math::random() as f32 * (max - min) + min
 }
 
+pub struct Throttle {
+    pub time: f32,
+    pub interval: f32,
+}
+
+impl Throttle {
+    pub fn new(interval: f32) -> Self {
+        Self {
+            time: 0.0,
+            interval,
+        }
+    }
+
+    pub fn get(&mut self, dt: f32) -> bool {
+        self.time += dt;
+        if self.time >= self.interval {
+            self.time -= self.interval;
+            true
+        } else {
+            false
+        }
+    }
+}

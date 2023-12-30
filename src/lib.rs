@@ -1,5 +1,6 @@
 mod bitset;
 mod particle;
+mod performance;
 mod render;
 mod utils;
 
@@ -7,7 +8,8 @@ use particle::{Operation, Particle};
 use wasm_bindgen::prelude::*;
 use web_sys::js_sys::Math;
 
-use crate::render::{ctx2d::Ctx2d, Context, pixi::Pixi};
+use crate::render::{ctx2d::Ctx2d, Context};
+use performance::Performance;
 
 const MAX_PARTICLES: usize = 1 << 13;
 
@@ -17,9 +19,8 @@ pub struct Fireworks {
     height: f32,
     ctx: Ctx2d,
     last_time: f64,
-    needs_render: bool,
-    fps_el: web_sys::HtmlElement,
-    fps_avg: f32,
+    render_throttle: utils::Throttle,
+    perf: Performance,
 
     particles: Vec<Particle>,
     new_particles: Vec<Particle>,
@@ -40,16 +41,9 @@ impl Fireworks {
 
         let last_time = window.performance().unwrap().now();
 
-        let fps_el = window
-            .document()
-            .unwrap()
-            .get_element_by_id("fps")
-            .unwrap()
-            .dyn_into::<web_sys::HtmlElement>()
-            .unwrap();
-        let fps_avg = 60.0;
+        let render_throttle = utils::Throttle::new(1.0 / 30.0);
 
-        let needs_render = true;
+        let perf = Performance::new();
 
         let particles = Vec::with_capacity(MAX_PARTICLES);
         let new_particles = Vec::new();
@@ -59,9 +53,8 @@ impl Fireworks {
             height,
             ctx,
             last_time,
-            fps_el,
-            fps_avg,
-            needs_render,
+            perf,
+            render_throttle,
             particles,
             new_particles,
         })
@@ -70,9 +63,17 @@ impl Fireworks {
     #[wasm_bindgen]
     pub fn tick(&mut self) {
         let dt = self.calc_dt();
+        self.perf.fps.update(1.0 / dt);
         if dt < 0.2 {
+            self.perf.update.start();
             self.update(dt);
-            self.render();
+            self.perf.update.end();
+
+            if self.render_throttle.get(dt) {
+                self.perf.render.start();
+                self.render();
+                self.perf.render.end();
+            }
         }
     }
 
@@ -122,19 +123,9 @@ impl Fireworks {
             self.particles
                 .push(Particle::random(self.width, self.height));
         }
-
-        // Update fps counter
-        self.fps_avg = self.fps_avg * 0.9 + 0.1 * (1.0 / dt);
-        self.fps_el.set_inner_text(&format!("{:.2}", self.fps_avg));
     }
 
     pub fn render(&mut self) {
-        // yup we just render every other frame
-        self.needs_render = !self.needs_render;
-        if !self.needs_render {
-            return;
-        }
-
         self.ctx.clear(self.width, self.height);
         for p in &self.particles {
             p.render(&self.ctx);
