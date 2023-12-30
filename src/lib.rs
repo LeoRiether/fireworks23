@@ -1,10 +1,13 @@
 mod bitset;
 mod particle;
+mod render;
 mod utils;
 
 use particle::{Operation, Particle};
 use wasm_bindgen::prelude::*;
 use web_sys::js_sys::Math;
+
+use crate::render::{ctx2d::Ctx2d, Context, pixi::Pixi};
 
 const MAX_PARTICLES: usize = 1 << 13;
 
@@ -12,8 +15,9 @@ const MAX_PARTICLES: usize = 1 << 13;
 pub struct Fireworks {
     width: f32,
     height: f32,
-    ctx: web_sys::CanvasRenderingContext2d,
+    ctx: Ctx2d,
     last_time: f64,
+    needs_render: bool,
     fps_el: web_sys::HtmlElement,
     fps_avg: f32,
 
@@ -31,19 +35,8 @@ impl Fireworks {
         let width = window.inner_width()?.as_f64().unwrap() as f32;
         let height = window.inner_height()?.as_f64().unwrap() as f32;
 
-        let canvas = Self::create_canvas(width, height)?;
-        window
-            .document()
-            .unwrap()
-            .body()
-            .unwrap()
-            .append_child(&canvas)?;
-
-        let ctx = canvas
-            .get_context("2d")?
-            .unwrap()
-            .dyn_into::<web_sys::CanvasRenderingContext2d>()
-            .unwrap();
+        let ctx = Ctx2d::new(width, height)?;
+        // let ctx = Pixi{};
 
         let last_time = window.performance().unwrap().now();
 
@@ -56,6 +49,8 @@ impl Fireworks {
             .unwrap();
         let fps_avg = 60.0;
 
+        let needs_render = true;
+
         let particles = Vec::with_capacity(MAX_PARTICLES);
         let new_particles = Vec::new();
 
@@ -66,20 +61,10 @@ impl Fireworks {
             last_time,
             fps_el,
             fps_avg,
+            needs_render,
             particles,
             new_particles,
         })
-    }
-
-    fn create_canvas(width: f32, height: f32) -> Result<web_sys::HtmlCanvasElement, JsValue> {
-        let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.create_element("canvas").unwrap();
-        let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
-        canvas.set_attribute("id", "world").unwrap();
-        canvas.set_attribute("width", width.to_string().as_str())?;
-        canvas.set_attribute("height", height.to_string().as_str())?;
-        canvas.set_attribute("style", "overflow: hidden;")?;
-        Ok(canvas)
     }
 
     #[wasm_bindgen]
@@ -143,10 +128,14 @@ impl Fireworks {
         self.fps_el.set_inner_text(&format!("{:.2}", self.fps_avg));
     }
 
-    pub fn render(&self) {
-        self.ctx.set_fill_style(&"#000".into());
-        self.ctx
-            .fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
+    pub fn render(&mut self) {
+        // yup we just render every other frame
+        self.needs_render = !self.needs_render;
+        if !self.needs_render {
+            return;
+        }
+
+        self.ctx.clear(self.width, self.height);
         for p in &self.particles {
             p.render(&self.ctx);
         }

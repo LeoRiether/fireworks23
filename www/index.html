@@ -29,6 +29,24 @@
 
     <span id="fps"></span>
 
+    <!--<script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
+    <script>
+        const app = new PIXI.Application({ antialias: true, resizeTo: window });
+        window.app = app;
+
+        const graphics = new PIXI.Graphics();
+        window.renderClear = () => graphics.clear();
+        window.renderCircle = (x, y, r, color, alpha) => {
+            graphics.lineStyle(0);
+            graphics.beginFill(color, alpha);
+            graphics.drawCircle(x, y, r);
+            graphics.endFill();
+        };
+
+        app.stage.addChild(graphics);
+        console.log("[PIXI]", graphics);
+    </script>-->
+
     <script src="./bootstrap.js"></script>
   </body>
 </html>

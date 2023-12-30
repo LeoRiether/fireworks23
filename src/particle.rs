@@ -1,4 +1,4 @@
-use crate::utils::rand32;
+use crate::{render::Context, utils::rand32};
 use std::{mem::take, vec};
 
 const GRAVITY: f32 = 500.0;
@@ -10,6 +10,7 @@ pub struct Particle {
     pub vx: f32,
     pub vy: f32,
     pub color: String,
+    pub alpha: f32,
     pub behaviors: Vec<Behavior>,
 }
 
@@ -54,6 +55,7 @@ impl Particle {
             vx: rand32(-200.0, 200.0),
             vy: rand32(-1100.0, -500.0),
             color: format!("hsl({}, 80%, 60%)", rand32(0.0, 360.0)),
+            alpha: 1.0,
             behaviors,
         }
     }
@@ -66,6 +68,8 @@ impl Particle {
     #[inline]
     pub fn update(&mut self, dt: f32, width: f32, height: f32) -> Vec<Operation> {
         let mut result = Vec::new();
+
+        self.alpha = 1.0;
 
         // Update behaviors
         let mut behaviors = take(&mut self.behaviors);
@@ -83,24 +87,8 @@ impl Particle {
     }
 
     #[inline]
-    pub fn render(&self, ctx: &web_sys::CanvasRenderingContext2d) {
-        ctx.set_global_alpha(1.0);
-        ctx.set_fill_style(&self.color.clone().into());
-
-        for behavior in &self.behaviors {
-            behavior.render(ctx);
-        }
-
-        ctx.begin_path();
-        ctx.arc(
-            self.x as f64,
-            self.y as f64,
-            1.5,
-            0.0,
-            2.0 * std::f64::consts::PI,
-        )
-        .unwrap();
-        ctx.fill();
+    pub fn render<C: Context>(&self, ctx: &C) {
+        ctx.circle(self.x, self.y, 1.3, &self.color, self.alpha);
     }
 }
 
@@ -148,12 +136,17 @@ impl Behavior {
                 if *alpha < 0.15 {
                     result.push(Operation::Die);
                 }
+                p.alpha *= *alpha;
             }
             Sparkles {
                 time,
-                cycle_duration: _,
+                cycle_duration,
             } => {
                 *time += dt;
+
+                let alpha =
+                    0.5 + 0.5 * (2.0 * std::f32::consts::PI * *time / *cycle_duration).cos();
+                p.alpha *= alpha;
             }
             DiesAfter(time) => {
                 *time -= dt;
@@ -186,24 +179,6 @@ impl Behavior {
                 trail.vy *= 0.1;
                 result.push(Operation::Push(trail));
             }
-        }
-    }
-
-    pub fn render(&self, ctx: &web_sys::CanvasRenderingContext2d) {
-        use Behavior::*;
-        match self {
-            Fades { alpha, factor: _ } => {
-                ctx.set_global_alpha(ctx.global_alpha() * *alpha as f64);
-            }
-            Sparkles {
-                time,
-                cycle_duration,
-            } => {
-                let alpha = 0.5 + 0.5 * (2.0 * std::f32::consts::PI * time / cycle_duration).cos();
-                ctx.set_global_alpha(ctx.global_alpha() * alpha as f64);
-            }
-            Rigidbody | Slowdown(_) | HasFuse(_) | DoubleFuse(_) | DiesAfter(_) | LeavesTrail
-            | LeavesSparklingTrail => {}
         }
     }
 }
