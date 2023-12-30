@@ -65,7 +65,7 @@ impl Fireworks {
         canvas.set_attribute("id", "world").unwrap();
         canvas.set_attribute("width", width.to_string().as_str())?;
         canvas.set_attribute("height", height.to_string().as_str())?;
-        canvas.set_attribute("overflow", "hidden")?;
+        canvas.set_attribute("style", "overflow: hidden;")?;
         Ok(canvas)
     }
 
