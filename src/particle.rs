@@ -51,7 +51,7 @@ impl Particle {
         Self {
             x: rand32(0.0, width),
             y: height - 1.0,
-            vx: rand32(-100.0, 100.0),
+            vx: rand32(-200.0, 200.0),
             vy: rand32(-1100.0, -500.0),
             color: format!("hsl({}, 80%, 60%)", rand32(0.0, 360.0)),
             behaviors,
@@ -115,6 +115,7 @@ impl Behavior {
                 p.vy += GRAVITY * dt;
             }
             Slowdown(factor) => {
+                p.vy -= 0.98 * GRAVITY * dt; // gravity does not affect as much I guess??
                 p.vx *= *factor;
                 p.vy *= *factor;
             }
@@ -156,7 +157,7 @@ impl Behavior {
             }
             DiesAfter(time) => {
                 *time -= dt;
-                if (*time) < 0.0 {
+                if *time <= 0.0 {
                     result.push(Operation::Die);
                 }
             }
@@ -164,7 +165,7 @@ impl Behavior {
                 let mut trail = p.clone();
                 trail.behaviors = vec![Behavior::Fades {
                     alpha: 1.0,
-                    factor: 0.97,
+                    factor: 0.95,
                 }];
                 trail.vx *= 0.1;
                 trail.vy *= 0.1;
@@ -175,10 +176,10 @@ impl Behavior {
                     .clone()
                     .with_behavior(Behavior::Fades {
                         alpha: 1.0,
-                        factor: 0.97,
+                        factor: 0.95,
                     })
                     .with_behavior(Behavior::Sparkles {
-                        time: 0.0,
+                        time: rand32(0.0, 0.8),
                         cycle_duration: rand32(0.1, 0.8),
                     });
                 trail.vx *= 0.1;
@@ -192,14 +193,14 @@ impl Behavior {
         use Behavior::*;
         match self {
             Fades { alpha, factor: _ } => {
-                ctx.set_global_alpha(*alpha as f64);
+                ctx.set_global_alpha(ctx.global_alpha() * *alpha as f64);
             }
             Sparkles {
                 time,
                 cycle_duration,
             } => {
                 let alpha = 0.5 + 0.5 * (2.0 * std::f32::consts::PI * time / cycle_duration).cos();
-                ctx.set_global_alpha(alpha as f64);
+                ctx.set_global_alpha(ctx.global_alpha() * alpha as f64);
             }
             Rigidbody | Slowdown(_) | HasFuse(_) | DoubleFuse(_) | DiesAfter(_) | LeavesTrail
             | LeavesSparklingTrail => {}
@@ -214,7 +215,6 @@ fn explode(n: usize, mut p: Particle, result: &mut Vec<Operation>) {
         let mut child = p.clone();
         modify_child_behaviors(&mut child.behaviors);
 
-        // let radius = rand32();
         let (vx, vy) = random_velocity_in_sphere(55000000.0);
         child.vx += vx;
         child.vy += vy;
@@ -239,11 +239,11 @@ fn random_explosion_behaviors() -> Vec<Behavior> {
         },
     ];
 
-    // match rand32(0.0, 1.0) {
-    //     x if x < 0.05 => behaviors.push(Behavior::LeavesTrail),
-    //     x if x < 0.10 => behaviors.push(Behavior::LeavesSparklingTrail),
-    //     _ => {}
-    // }
+    match rand32(0.0, 1.0) {
+        x if x < 0.02 => behaviors.push(Behavior::LeavesTrail),
+        x if x < 0.05 => behaviors.push(Behavior::LeavesSparklingTrail),
+        _ => {}
+    }
 
     if rand32(0.0, 1.0) < 0.3 {
         behaviors.push(Behavior::Sparkles {
