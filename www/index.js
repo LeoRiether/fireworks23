@@ -10,3 +10,7 @@ const loop = () => {
     requestAnimationFrame(loop);
 };
 requestAnimationFrame(loop);
+
+window.addEventListener("click", e => {
+    fireworks.push_lerper(e.clientX, e.clientY, 1.0);
+});

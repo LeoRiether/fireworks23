@@ -38,3 +38,20 @@ impl Throttle {
         }
     }
 }
+
+pub fn lerp(from: f32, to: f32, p: f32) -> f32 {
+    from + (to - from) * p
+}
+
+pub fn qlerp(from: f32, to: f32, p: f32) -> f32 {
+    lerp(from, to, 1.0 - (p - 1.0) * (p - 1.0))
+}
+
+pub fn random_color() -> String {
+    format!("hsl({}, 80%, 60%)", rand32(0.0, 360.0))
+}
+
+pub fn now() -> f64 {
+    web_sys::window().unwrap().performance().unwrap().now()
+}
+

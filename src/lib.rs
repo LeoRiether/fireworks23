@@ -8,7 +8,10 @@ use particle::{Operation, Particle};
 use wasm_bindgen::prelude::*;
 use web_sys::js_sys::Math;
 
-use crate::render::{ctx2d::Ctx2d, Context};
+use crate::{
+    render::{ctx2d::Ctx2d, Context},
+    utils::{now, rand32},
+};
 use performance::Performance;
 
 const MAX_PARTICLES: usize = 1 << 13;
@@ -39,7 +42,7 @@ impl Fireworks {
         let ctx = Ctx2d::new(width, height)?;
         // let ctx = Pixi{};
 
-        let last_time = window.performance().unwrap().now();
+        let last_time = now();
 
         let render_throttle = utils::Throttle::new(1.0 / 30.0);
 
@@ -63,7 +66,7 @@ impl Fireworks {
     #[wasm_bindgen]
     pub fn tick(&mut self) {
         let dt = self.calc_dt();
-        self.perf.fps.update(1.0 / dt);
+        self.perf.fps.update(1.0 / dt as f64);
         if dt < 0.2 {
             self.perf.update.start();
             self.update(dt);
@@ -77,10 +80,18 @@ impl Fireworks {
         }
     }
 
+    #[wasm_bindgen]
+    pub fn push_lerper(&mut self, x1: f32, y1: f32, duration: f32) {
+        let x0 = rand32(0.0, self.width);
+        let y0 = self.height - 1.0;
+        self.new_particles
+            .push(Particle::lerper(x0, y0, x1, y1, duration));
+    }
+
     fn calc_dt(&mut self) -> f32 {
-        let now = web_sys::window().unwrap().performance().unwrap().now();
-        let dt = (now - self.last_time) / 1000.0; // in seconds
-        self.last_time = now;
+        let n = now();
+        let dt = (n - self.last_time) / 1000.0; // in seconds
+        self.last_time = n;
         dt as f32
     }
 
@@ -119,7 +130,7 @@ impl Fireworks {
         }
 
         // Randomly generate new particles
-        if Math::random() < 0.1 && self.particles.len() < MAX_PARTICLES {
+        if Math::random() < 0.08 && self.particles.len() < MAX_PARTICLES {
             self.particles
                 .push(Particle::random(self.width, self.height));
         }

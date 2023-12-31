@@ -1,13 +1,11 @@
 use wasm_bindgen::JsCast;
 
-fn now() -> f32 {
-    web_sys::window().unwrap().performance().unwrap().now() as _
-}
+use crate::utils::now;
 
 /// Tracks and displays an exponentially weighted moving average
 pub struct DisplayedAverage {
-    frame_start: f32,
-    value: f32,
+    frame_start: f64,
+    value: f64,
     display: web_sys::HtmlElement,
     frames: u8,
     suffix: &'static str,
@@ -32,7 +30,7 @@ impl DisplayedAverage {
         self.update(now() - self.frame_start);
     }
 
-    pub fn update(&mut self, value: f32) {
+    pub fn update(&mut self, value: f64) {
         self.value = 0.9 * self.value + 0.1 * value;
         if !self.value.is_finite() {
             self.value = 0.0;
