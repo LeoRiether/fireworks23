@@ -80,10 +80,14 @@ export function date() {
 ////////////////////////////////////////////////////////////////////////////////
 
 const targetDate = new Date(2024, 0, 1, 0, 0, 0, 0); // why the fuck are months 0-indexed?
+// const targetDate = new Date();
+// targetDate.setSeconds(targetDate.getSeconds() + 10);
+
 let lastSTo = -1000;
 function update_countdown() {
 	let msTo = targetDate - date();
 	let sTo = ~~(msTo / 1000);
+    sTo += 1; // correct for fireworks delay
 
     fireworks.update_countdown(sTo);
 	
