@@ -1,4 +1,5 @@
 mod bitset;
+mod font;
 mod particle;
 mod performance;
 mod render;
@@ -24,6 +25,9 @@ pub struct Fireworks {
     last_time: f64,
     render_throttle: utils::Throttle,
     perf: Performance,
+
+    /// In seconds. Not a duration because I don't know how negative durations behave
+    countdown: i64,
 
     particles: Vec<Particle>,
     new_particles: Vec<Particle>,
@@ -58,6 +62,7 @@ impl Fireworks {
             last_time,
             perf,
             render_throttle,
+            countdown: 0,
             particles,
             new_particles,
         })
@@ -81,11 +86,23 @@ impl Fireworks {
     }
 
     #[wasm_bindgen]
-    pub fn push_lerper(&mut self, x1: f32, y1: f32, duration: f32) {
-        let x0 = rand32(0.0, self.width);
+    pub fn push_lerper(
+        &mut self,
+        x1: f32,
+        y1: f32,
+        explosion_particles: Option<usize>,
+        duration: f32,
+    ) {
+        let x0 = rand32(x1 - 200.0, x1 + 200.0).max(0.0).min(self.width);
         let y0 = self.height - 1.0;
-        self.new_particles
-            .push(Particle::lerper(x0, y0, x1, y1, duration));
+        self.new_particles.push(Particle::lerper(
+            x0,
+            y0,
+            x1,
+            y1,
+            explosion_particles,
+            duration,
+        ));
     }
 
     fn calc_dt(&mut self) -> f32 {
@@ -130,7 +147,10 @@ impl Fireworks {
         }
 
         // Randomly generate new particles
-        if Math::random() < 0.08 && self.particles.len() < MAX_PARTICLES {
+        let dice = Math::random() < 0.08;
+        let can_push = self.particles.len() < MAX_PARTICLES;
+        let is_new_year = self.countdown <= 0;
+        if is_new_year && dice && can_push {
             self.particles
                 .push(Particle::random(self.width, self.height));
         }
@@ -140,6 +160,47 @@ impl Fireworks {
         self.ctx.clear(self.width, self.height);
         for p in &self.particles {
             p.render(&self.ctx);
+        }
+    }
+
+    #[wasm_bindgen]
+    pub fn update_countdown(&mut self, seconds: f64) {
+        let seconds = (seconds as i64).max(0);
+
+        if seconds == self.countdown {
+            return;
+        }
+
+        self.countdown = seconds;
+
+        let s = seconds % 60;
+        let m = (seconds / 60) % 60;
+        let h = seconds / 60 / 60;
+
+        let mut text = font::Text::new();
+        if seconds == 0 {
+            text.push(2).push(0).push(2).push(4);
+        } else if seconds < 10 {
+            text.push(s);
+        } else {
+            if h > 0 {
+                text.push(h / 10).push(h % 10).push(10); // :
+            }
+            if m > 0 || h > 0 {
+                text.push(m / 10).push(m % 10).push(10); // :
+            }
+            if s > 0 || m > 0 || h > 0 {
+                text.push(s / 10).push(s % 10);
+            }
+        }
+
+        let points = text
+            .scale(128.)
+            .center(font::Point::new(self.width / 2., self.height / 2.))
+            .build();
+
+        for p in points {
+            self.push_lerper(p.x, p.y, Some(1), 1.0);
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::{
     render::Context,
-    utils::{qlerp, rand32, random_color},
+    utils::{coolerp, qlerp, rand32, random_color},
 };
 use std::{mem::take, vec};
 
@@ -32,11 +32,12 @@ pub enum Behavior {
 }
 
 #[derive(Clone)]
-struct Lerper {
+pub struct Lerper {
     x0: f32,
     y0: f32,
     x1: f32,
     y1: f32,
+    explosion_particles: Option<usize>,
     t: f32,
     duration: f32,
 }
@@ -74,20 +75,38 @@ impl Particle {
         }
     }
 
-    pub fn lerper(x0: f32, y0: f32, x1: f32, y1: f32, duration: f32) -> Self {
+    pub fn lerper(
+        x0: f32,
+        y0: f32,
+        x1: f32,
+        y1: f32,
+        explosion_particles: Option<usize>,
+        duration: f32,
+    ) -> Self {
         let mut behaviors = vec![Behavior::Lerper(Box::new(Lerper {
             x0,
             y0,
             x1,
             y1,
+            explosion_particles,
             t: 0.0,
             duration,
         }))];
 
-        if rand32(0.0, 1.0) < 0.5 {
-            behaviors.push(Behavior::LeavesTrail);
-        } else {
-            behaviors.push(Behavior::LeavesSparklingTrail);
+        // yeah this may be too much of a hack
+        match explosion_particles {
+            Some(_) => {
+                if rand32(0.0, 1.0) < 0.03 {
+                    behaviors.push(Behavior::LeavesSparklingTrail);
+                }
+            }
+            None => {
+                if rand32(0.0, 1.0) < 0.5 {
+                    behaviors.push(Behavior::LeavesTrail);
+                } else {
+                    behaviors.push(Behavior::LeavesSparklingTrail);
+                }
+            }
         }
 
         Self {
@@ -95,7 +114,7 @@ impl Particle {
             y: y0,
             vx: 0.0,
             vy: 0.0,
-            color: random_color(),
+            color: "#fff".into(),
             alpha: 1.0,
             behaviors,
         }
@@ -148,13 +167,27 @@ impl Behavior {
                 if lerper.t >= lerper.duration {
                     result.push(Operation::Die);
                     let mut child = p.clone();
-                    child.behaviors = random_explosion_behaviors();
-                    let n = rand32(80.0, 160.0) as usize;
+                    child.color = random_color();
+                    child.behaviors = vec![
+                        Behavior::Rigidbody,
+                        Behavior::Sparkles {
+                            time: rand32(0.0, 0.2),
+                            cycle_duration: rand32(0.0, 0.2),
+                        },
+                        Behavior::Fades {
+                            alpha: 1.0,
+                            factor: rand32(0.97, 0.985),
+                        },
+                    ];
+                    // child.behaviors = random_explosion_behaviors();
+                    let n = lerper
+                        .explosion_particles
+                        .unwrap_or_else(|| rand32(80.0, 160.0) as usize);
                     explode(n, child, result);
                 } else {
                     let t = lerper.t / lerper.duration;
-                    p.x = qlerp(lerper.x0, lerper.x1, t);
-                    p.y = qlerp(lerper.y0, lerper.y1, t);
+                    p.x = coolerp(lerper.x0, lerper.x1, t);
+                    p.y = coolerp(lerper.y0, lerper.y1, t);
                 }
             }
             HasFuse(fuse) => {
@@ -182,7 +215,11 @@ impl Behavior {
                 }
             }
             Fades { alpha, factor } => {
-                *alpha *= if *alpha > 0.6 { (*factor * 1.03).min(0.99) } else { *factor };
+                *alpha *= if *alpha > 0.6 {
+                    (*factor * 1.03).min(0.99)
+                } else {
+                    *factor
+                };
                 if *alpha < 0.15 {
                     result.push(Operation::Die);
                 }
