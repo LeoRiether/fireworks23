@@ -196,11 +196,11 @@ impl Fireworks {
 
         let points = text
             .scale(128.)
-            .center(font::Point::new(self.width / 2., self.height / 2.))
+            .center(font::Point::new(self.width as f64 / 2., self.height as f64 / 2.))
             .build();
 
         for p in points {
-            self.push_lerper(p.x, p.y, Some(1), 1.0);
+            self.push_lerper(p.x as f32, p.y as f32, Some(1), 1.0);
         }
     }
 }
